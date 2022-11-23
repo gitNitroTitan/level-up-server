@@ -51,10 +51,3 @@ def register_user(request):
             'bio': gamer.bio
     }
     return Response(data)
-    # Return the gamer info to the client
-    data = {
-            'id': gamer.id,
-            'uid': gamer.uid,
-            'bio': gamer.bio
-    }
-    return Response(data)
