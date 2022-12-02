@@ -21,13 +21,6 @@ class EventView(ViewSet):
         except Event.DoesNotExist as ex:
             return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
 
-        db_cursor.execute("""
-            select id, description
-            from levelupapi_event
-            where id = ?
-        """,(pk,)
-        )
-
     def list(self, request):
         """Handle GET requests to get all events
 
@@ -49,8 +42,8 @@ class EventView(ViewSet):
         Returns
             Response -- JSON serialized game instance
         """
-        game = Game.objects.get(pk=request.data["game_id"])
-        gamer = Gamer.objects.get(pk=request.data["organizer"])
+        game = Game.objects.get(pk=request.data["game"])
+        gamer = Gamer.objects.get(pk=request.data["organizer_id"])
 
 
 
@@ -59,10 +52,34 @@ class EventView(ViewSet):
             date=request.data["date"],
             time=request.data["time"],
             game=game,
-            gamer=gamer
+            organizer=gamer
         )
         serializer = EventSerializer(event)
         return Response(serializer.data)
+
+    def update(self, request, pk):
+        """Handle PUT requests for a game
+
+        Returns:
+            Response -- Empty body with 204 status code
+        """
+
+        event = Event.objects.get(pk=pk)
+        event.description = request.data["description"]
+        event.date = request.data["date"]
+        event.time = request.data["time"]
+
+        game = Game.objects.get(pk=request.data["game"])
+        event.game = game
+        event.save()
+
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+
+    def destroy(self, request, pk):
+        event = Event.objects.get(pk=pk)
+        event.delete()
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+
 
 class EventSerializer(serializers.ModelSerializer):
     """JSON serializer for events
